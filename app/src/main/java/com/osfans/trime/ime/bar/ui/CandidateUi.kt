@@ -15,8 +15,8 @@ import splitties.views.dsl.constraintlayout.constraintLayout
 import splitties.views.dsl.constraintlayout.endOfParent
 import splitties.views.dsl.constraintlayout.lParams
 import splitties.views.dsl.constraintlayout.matchConstraints
-import splitties.views.dsl.constraintlayout.matchParent
 import splitties.views.dsl.constraintlayout.startOfParent
+import splitties.views.dsl.core.matchParent
 import splitties.views.dsl.core.Ui
 import splitties.views.dsl.core.add
 
