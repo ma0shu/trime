@@ -10,8 +10,6 @@ import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
-import splitties.dimensions.dp
-
 class FlexboxVerticalDecoration(
     val drawable: Drawable,
 ) : RecyclerView.ItemDecoration() {
@@ -63,9 +61,7 @@ class FlexboxVerticalDecoration(
             }
             val top = view.top - lp.topMargin
             val bottom = view.bottom + lp.bottomMargin
-            // make the divider shorter
-            val vInset = parent.dp(8)
-            drawable.setBounds(left, top + vInset, right, bottom - vInset)
+            drawable.setBounds(left, top, right, bottom)
             drawable.draw(c)
         }
     }

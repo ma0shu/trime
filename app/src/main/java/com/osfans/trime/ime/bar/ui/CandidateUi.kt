@@ -14,6 +14,8 @@ import splitties.views.dsl.constraintlayout.centerVertically
 import splitties.views.dsl.constraintlayout.constraintLayout
 import splitties.views.dsl.constraintlayout.endOfParent
 import splitties.views.dsl.constraintlayout.lParams
+import splitties.views.dsl.constraintlayout.matchConstraints
+import splitties.views.dsl.constraintlayout.matchParent
 import splitties.views.dsl.constraintlayout.startOfParent
 import splitties.views.dsl.core.Ui
 import splitties.views.dsl.core.add
@@ -32,16 +34,16 @@ class CandidateUi(
         ctx.constraintLayout {
             add(
                 unrollButton,
-                lParams(dp(40)) {
+                lParams(dp(32)) {
                     centerVertically()
                     endOfParent()
                 },
             )
             add(
                 compatView,
-                lParams {
+                lParams(matchConstraints, matchParent) {
                     centerVertically()
-                    startOfParent(dp(theme.generalStyle.candidatePadding / 2))
+                    startOfParent()
                     before(unrollButton)
                 },
             )
