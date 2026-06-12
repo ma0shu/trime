@@ -78,6 +78,7 @@ class InputBarDelegate : InputBroadcastReceiver {
 
     private var isClipboardFresh: Boolean = false
     private var isInlineSuggestionPresent: Boolean = false
+    private var inputBarView: ViewAnimator? = null
 
     @Keep
     private val onClipboardUpdateListener = ClipboardHelper.OnClipboardUpdateListener {
@@ -113,8 +114,10 @@ class InputBarDelegate : InputBroadcastReceiver {
                 isInlineSuggestionPresent -> AlwaysUi.State.InlineSuggestion
                 else -> AlwaysUi.State.Toolbar
             }
-        if (newState == alwaysUi.currentState) return
-        alwaysUi.updateState(newState)
+        if (newState != alwaysUi.currentState) {
+            alwaysUi.updateState(newState)
+        }
+        updateBarVisibility()
     }
 
     private val swipeDownHideKeyboardCallback: ((KeyBehavior) -> Unit) = { d ->
@@ -232,24 +235,36 @@ class InputBarDelegate : InputBroadcastReceiver {
 
     private fun switchUiByState(state: QuickBarStateMachine.State) {
         val index = state.ordinal
-        if (view.displayedChild == index) return
-        val new = view.getChildAt(index)
-        if (new != tabUi.root) {
-            tabUi.setBackButtonOnClickListener { }
-            tabUi.setTitle("")
-            tabUi.removeExternal()
+        if (view.displayedChild != index) {
+            val new = view.getChildAt(index)
+            if (new != tabUi.root) {
+                tabUi.setBackButtonOnClickListener { }
+                tabUi.setTitle("")
+                tabUi.removeExternal()
+            }
+            view.displayedChild = index
         }
-        view.displayedChild = index
+        updateBarVisibility()
+    }
+
+    private fun shouldShowBar(): Boolean {
+        if (hideQuickBar) return false
+        val shouldHideEmptyToolbar =
+            theme.toolBar.hideToolbarWhenEmpty &&
+                barStateMachine.currentState == QuickBarStateMachine.State.Always &&
+                alwaysUi.currentState == AlwaysUi.State.Toolbar
+        return !shouldHideEmptyToolbar
+    }
+
+    private fun updateBarVisibility() {
+        inputBarView?.let {
+            it.visibility = if (shouldShowBar()) View.VISIBLE else View.GONE
+        }
     }
 
     val view by lazy {
         ViewAnimator(context).apply {
-            visibility =
-                if (hideQuickBar) {
-                    View.GONE
-                } else {
-                    View.VISIBLE
-                }
+            inputBarView = this
             background =
                 ColorManager.getDecorDrawable(
                     "candidate_background",
@@ -262,6 +277,7 @@ class InputBarDelegate : InputBroadcastReceiver {
             add(tabUi.root, lParams(matchParent, matchParent))
 
             evalAlwaysUiState()
+            updateBarVisibility()
             ClipboardHelper.addOnUpdateListener(onClipboardUpdateListener)
         }
     }
@@ -298,6 +314,7 @@ class InputBarDelegate : InputBroadcastReceiver {
         val suggestions = response.inlineSuggestions
         if (suggestions.isEmpty()) {
             isInlineSuggestionPresent = false
+            evalAlwaysUiState()
             return true
         }
         var pinned: InlineSuggestion? = null

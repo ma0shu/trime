@@ -78,6 +78,10 @@ class KeyView(
         boundsValid = true
     }
 
+    fun invalidateBounds() {
+        boundsValid = false
+    }
+
     init {
         setWillNotDraw(false)
         isRepeatable = key.click?.isRepeatable ?: false

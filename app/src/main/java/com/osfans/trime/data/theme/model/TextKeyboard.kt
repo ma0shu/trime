@@ -38,6 +38,7 @@ data class TextKeyboard(
     val asciiKeyboard: String,
     val landscapeKeyboard: String,
     val landscapeSplitPercent: Int,
+    val hideRowsWhenHasCandidates: List<Int>,
     val keyTextOffsetX: Float,
     val keyTextOffsetY: Float,
     val keySymbolOffsetX: Float,
@@ -146,6 +147,8 @@ data class TextKeyboard(
             asciiKeyboard = node["ascii_keyboard"]?.string ?: "",
             landscapeKeyboard = node["landscape_keyboard"]?.string ?: "",
             landscapeSplitPercent = node["landscape_split_percent"]?.int ?: 0,
+            hideRowsWhenHasCandidates = node["hide_rows_when_has_candidates"]?.sequence
+                ?.mapNotNull { it.int } ?: emptyList(),
             keyTextOffsetX = node["key_text_offset_x"]?.float ?: 0f,
             keyTextOffsetY = node["key_text_offset_y"]?.float ?: 0f,
             keySymbolOffsetX = node["key_symbol_offset_x"]?.float ?: 0f,

@@ -75,6 +75,7 @@ class KeyboardWindow :
     private var currentKeyboardId = ""
     private var lastKeyboardId = ""
     private var lastLockKeyboardId = ""
+    private var hasCandidates = false
     private val cachedKeyboards = mutableMapOf<String, Pair<Keyboard, KeyboardView>>()
     private val currentKeyboard: Keyboard? get() = cachedKeyboards[currentKeyboardId]?.first
     private val currentKeyboardView: KeyboardView? get() = cachedKeyboards[currentKeyboardId]?.second
@@ -118,7 +119,8 @@ class KeyboardWindow :
         }
 
         keyboard.also {
-            runBlocking { _currentKeyboardHeight.emit(it.keyboardHeight) }
+            view.setHasCandidates(hasCandidates)
+            emitCurrentKeyboardHeight()
             if (it.isLock) lastLockKeyboardId = target
             dispatchCapsState(it::setShifted)
 
@@ -206,7 +208,21 @@ class KeyboardWindow :
         Timber.d("Switched to keyboard: $target")
     }
 
+    private fun emitCurrentKeyboardHeight() {
+        val height = currentKeyboardView?.visibleKeyboardHeight ?: currentKeyboard?.keyboardHeight ?: return
+        runBlocking { _currentKeyboardHeight.emit(height) }
+    }
+
+    private fun updateCandidateRowVisibility(value: Boolean) {
+        hasCandidates = value
+        val view = currentKeyboardView ?: return
+        if (view.setHasCandidates(value)) {
+            emitCurrentKeyboardHeight()
+        }
+    }
+
     override fun onStartInput(info: EditorInfo) {
+        updateCandidateRowVisibility(false)
         var tempAsciiMode = false
         val targetKeyboard =
             when (info.imeOptions and EditorInfo.IME_FLAG_FORCE_ASCII) {
@@ -284,6 +300,10 @@ class KeyboardWindow :
 
     override fun onRimeSchemaUpdated(schema: SchemaItem) {
         switchKeyboard(".default")
+    }
+
+    override fun onCandidateListUpdate(data: RimeMessage.CandidateListMessage.Data) {
+        updateCandidateRowVisibility(data.candidates.isNotEmpty())
     }
 
     override fun onRimeOptionUpdated(value: RimeMessage.OptionMessage.Data) {

@@ -7,6 +7,7 @@ package com.osfans.trime.data.theme.model
 
 import android.os.Parcelable
 import com.osfans.trime.util.yaml.Node
+import com.osfans.trime.util.yaml.boolean
 import com.osfans.trime.util.yaml.float
 import com.osfans.trime.util.yaml.int
 import com.osfans.trime.util.yaml.mapping
@@ -21,6 +22,7 @@ data class ToolBar(
     val buttonSpacing: Int = 18,
     val buttonFont: List<String> = emptyList(),
     val backStyle: String = "ic@arrow-left",
+    val hideToolbarWhenEmpty: Boolean = false,
 ) : Parcelable {
 
     @Parcelize
@@ -98,6 +100,7 @@ data class ToolBar(
             buttonFont = node?.get("button_font")?.sequence
                 ?.mapNotNull(Node::string) ?: emptyList(),
             backStyle = node?.get("back_style")?.string ?: "ic@arrow-left",
+            hideToolbarWhenEmpty = node?.get("hide_toolbar_when_empty")?.boolean ?: false,
         )
     }
 }

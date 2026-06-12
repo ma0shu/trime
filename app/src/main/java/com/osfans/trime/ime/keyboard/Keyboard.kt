@@ -90,6 +90,12 @@ class Keyboard(
 
     var firstPressedKeyIndex: Int = -1
 
+    private val rowsToHideWhenHasCandidates = selfConfig?.hideRowsWhenHasCandidates
+        ?.filter { it >= 0 }
+        ?.toSet() ?: emptySet()
+    private val rowHeights = mutableMapOf<Int, Int>()
+    private var hasCandidates = false
+
     /** Width of the screen available to fit the keyboard  */
     private val allowedWidth: Int
         get() {
@@ -239,6 +245,9 @@ class Keyboard(
             }
 
             rowHeightScaled[rows - 1] = remainHeight
+            rowHeightScaled.forEachIndexed { index, height ->
+                rowHeights[index] = height
+            }
 
             var xPos = 0
             var yPos = 0
@@ -404,6 +413,27 @@ class Keyboard(
 
     val keys: List<Key>
         get() = mKeys
+
+    val visibleHeight: Int
+        get() = height - hiddenRows.sumOf { rowHeights[it] ?: 0 }
+
+    private val hiddenRows: Set<Int>
+        get() = if (hasCandidates) rowsToHideWhenHasCandidates else emptySet()
+
+    fun setHasCandidates(value: Boolean): Boolean {
+        if (hasCandidates == value) return false
+        hasCandidates = value
+        return true
+    }
+
+    fun isKeyVisible(key: Key): Boolean = key.row !in hiddenRows
+
+    fun getVisibleY(key: Key): Int {
+        val hiddenHeightBefore = hiddenRows.sumOf { row ->
+            if (row < key.row) rowHeights[row] ?: 0 else 0
+        }
+        return key.y - hiddenHeightBefore
+    }
 
     private fun setModifier(
         mask: Int,

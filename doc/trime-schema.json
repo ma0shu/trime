@@ -465,6 +465,10 @@
             "type": "string"
           },
           "default": []
+        },
+        "hide_toolbar_when_empty": {
+          "type": "boolean",
+          "default": false
         }
       }
     },
@@ -878,6 +882,11 @@
             "ascii_mode": { "type": "integer" },
             "width": { "type": "number" },
             "height": { "type": "number" },
+            "hide_rows_when_has_candidates": {
+              "type": "array",
+              "items": { "type": "integer" },
+              "description": "有候选时隐藏的键盘行号，从 0 开始"
+            },
             "lock": { "type": "boolean" },
             "keys": {
               "type": "array",

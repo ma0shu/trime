@@ -8,6 +8,7 @@ package com.osfans.trime.ime.keyboard
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
+import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.children
 import com.osfans.trime.data.prefs.AppPrefs
@@ -49,6 +50,7 @@ class KeyboardView(
             val keyView = createKeyView(index, key)
             addView(keyView)
         }
+        updateKeyViewLayout()
     }
 
     private fun createKeyView(index: Int, key: Key): KeyView = KeyView(context, key = key, keyboard = keyboard, keyboardView = this, keyboardActionListener = keyboardActionListener).apply {
@@ -58,7 +60,7 @@ class KeyboardView(
         layoutParams = LayoutParams(totalWidth, key.height)
 
         translationX = (key.x - key.extraWidthLeft).toFloat()
-        translationY = key.y.toFloat()
+        translationY = keyboard.getVisibleY(key).toFloat()
 
         setPadding(
             keyboard.horizontalGap / 2 + key.extraWidthLeft,
@@ -70,7 +72,7 @@ class KeyboardView(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val fullWidth = keyboard.minWidth + paddingLeft + paddingRight
-        val fullHeight = keyboard.height + paddingTop + paddingBottom
+        val fullHeight = keyboard.visibleHeight + paddingTop + paddingBottom
 
         val measuredWidth = minOf(
             MeasureSpec.getSize(widthMeasureSpec),
@@ -79,6 +81,27 @@ class KeyboardView(
 
         measureChildren(widthMeasureSpec, heightMeasureSpec)
         setMeasuredDimension(measuredWidth, fullHeight)
+    }
+
+    val visibleKeyboardHeight: Int
+        get() = keyboard.visibleHeight
+
+    fun setHasCandidates(hasCandidates: Boolean): Boolean {
+        val changed = keyboard.setHasCandidates(hasCandidates)
+        if (!changed) return false
+        updateKeyViewLayout()
+        requestLayout()
+        invalidate()
+        return true
+    }
+
+    private fun updateKeyViewLayout() {
+        keys.forEachIndexed { index, key ->
+            val keyView = getChildAt(index) ?: return@forEachIndexed
+            keyView.visibility = if (keyboard.isKeyVisible(key)) View.VISIBLE else View.GONE
+            keyView.translationY = keyboard.getVisibleY(key).toFloat()
+            (keyView as? KeyView)?.invalidateBounds()
+        }
     }
 
     override fun onDraw(canvas: Canvas) {
