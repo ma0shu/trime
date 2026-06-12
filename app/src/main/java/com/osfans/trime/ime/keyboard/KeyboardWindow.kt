@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.kodein.di.instance
+import splitties.dimensions.dp
 import splitties.views.dsl.core.add
 import splitties.views.dsl.core.frameLayout
 import splitties.views.dsl.core.lParams
@@ -209,7 +210,14 @@ class KeyboardWindow :
     }
 
     private fun emitCurrentKeyboardHeight() {
-        val height = currentKeyboardView?.visibleKeyboardHeight ?: currentKeyboard?.keyboardHeight ?: return
+        val keyboard = currentKeyboard
+        val viewHeight = currentKeyboardView?.visibleKeyboardHeight ?: keyboard?.keyboardHeight ?: return
+        val height = if (hasCandidates && keyboard != null) {
+            val inputBarHeight = context.dp(theme.generalStyle.run { candidateViewHeight + commentHeight })
+            maxOf(viewHeight, keyboard.keyboardHeight - inputBarHeight)
+        } else {
+            viewHeight
+        }
         runBlocking { _currentKeyboardHeight.emit(height) }
     }
 
